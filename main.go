@@ -1,7 +1,6 @@
 package main
 
 import (
-//	_ "github.com/google/gopacket/layers"
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/pcap"
 )
@@ -12,6 +11,11 @@ func main() {
 	handle, err := pcap.OpenLive("eth0", snapLen, true, pcap.BlockForever)
 
 	if err != nil {
+		panic(err)
+	}
+
+	// Filter out SSH connections
+	if err := handle.SetBPFFilter("port not 22"); err != nil {
 		panic(err)
 	}
 
