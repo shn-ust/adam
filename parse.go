@@ -29,6 +29,7 @@ var (
 	ipv4     layers.IPv4
 	tcp      layers.TCP
 	payload  gopacket.Payload
+	arp      layers.ARP
 )
 
 // Used to extract the necessary informations from a packet
@@ -50,7 +51,7 @@ func ParsePacket(packet gopacket.Packet) ParsedPacket {
 		cwr             bool
 	)
 
-	parser := gopacket.NewDecodingLayerParser(layers.LayerTypeEthernet, &ethernet, &ipv4, &tcp, &payload)
+	parser := gopacket.NewDecodingLayerParser(layers.LayerTypeEthernet, &ethernet, &ipv4, &tcp, &payload, &arp)
 	decoded := []gopacket.LayerType{}
 
 	err := parser.DecodeLayers(packet.Data(), &decoded)

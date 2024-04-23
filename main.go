@@ -10,15 +10,14 @@ import (
 func main() {
 	const snapLen = 262144
 
-	networkInterface := "lo"
+	networkInterface := "eth0"
 	handle, err := pcap.OpenLive(networkInterface, snapLen, true, pcap.BlockForever)
 
 	if err != nil {
 		panic(err)
 	}
 
-	// Filter out SSH connections
-	if err := handle.SetBPFFilter("port not 22"); err != nil {
+	if err := handle.SetBPFFilter("port 8080 or port 5432"); err != nil {
 		panic(err)
 	}
 
