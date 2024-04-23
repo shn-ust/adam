@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/pcap"
 )
@@ -8,7 +10,8 @@ import (
 func main() {
 	const snapLen = 262144
 
-	handle, err := pcap.OpenLive("eth0", snapLen, true, pcap.BlockForever)
+	networkInterface := "lo"
+	handle, err := pcap.OpenLive(networkInterface, snapLen, true, pcap.BlockForever)
 
 	if err != nil {
 		panic(err)
@@ -24,6 +27,6 @@ func main() {
 	packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
 
 	for packet := range packetSource.Packets() {
-		ParsePacket(packet)
+		fmt.Printf("%+v\n", ParsePacket(packet))
 	}
 }
