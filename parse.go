@@ -14,6 +14,14 @@ type ParsedPacket struct {
 	SourcePort      layers.TCPPort
 	DestinationIP   net.IP
 	DestinationPort layers.TCPPort
+	FIN             bool
+	SYN             bool
+	RST             bool
+	PSH             bool
+	ACK             bool
+	URG             bool
+	ECE             bool
+	CWR             bool
 }
 
 var (
@@ -32,6 +40,14 @@ func ParsePacket(packet gopacket.Packet) ParsedPacket {
 		sourcePort      layers.TCPPort
 		destionationIP  net.IP
 		destinationPort layers.TCPPort
+		fin             bool
+		syn             bool
+		rst             bool
+		psh             bool
+		ack             bool
+		urg             bool
+		ece             bool
+		cwr             bool
 	)
 
 	parser := gopacket.NewDecodingLayerParser(layers.LayerTypeEthernet, &ethernet, &ipv4, &tcp, &payload)
@@ -50,6 +66,14 @@ func ParsePacket(packet gopacket.Packet) ParsedPacket {
 		} else if layerType == layers.LayerTypeTCP {
 			sourcePort = tcp.SrcPort
 			destinationPort = tcp.DstPort
+			fin = tcp.FIN
+			syn = tcp.SYN
+			rst = tcp.RST
+			psh = tcp.PSH
+			ack = tcp.ACK
+			urg = tcp.URG
+			ece = tcp.ECE
+			cwr = tcp.CWR
 		}
 	}
 
@@ -59,5 +83,13 @@ func ParsePacket(packet gopacket.Packet) ParsedPacket {
 		SourcePort:      sourcePort,
 		DestinationIP:   destionationIP,
 		DestinationPort: destinationPort,
+		FIN:             fin,
+		SYN:             syn,
+		RST:             rst,
+		PSH:             psh,
+		ACK:             ack,
+		URG:             urg,
+		ECE:             ece,
+		CWR:             cwr,
 	}
 }
