@@ -12,29 +12,41 @@ import (
 func TestParsePacket(t *testing.T) {
 	var (
 		sourceIP   = net.ParseIP("127.0.0.1")
-		destIP     = net.ParseIP("127.0.0.1")
-		sourcePort = 8080
-		destPort   = 5432
+		destIP     = net.ParseIP("192.168.0.1")
+		sourcePort = uint16(8080)
+		destPort   = uint16(5432)
 	)
 
-	ipLayer := &layers.IPv4{
-		SrcIP: sourceIP,
-		DstIP: destIP,
+	ethernetLayer := layers.Ethernet{
+		SrcMAC:       net.HardwareAddr{0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+		DstMAC:       net.HardwareAddr{0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+		EthernetType: layers.EthernetTypeIPv4,
 	}
 
-	tcpLayer := &layers.TCP{
-		SrcPort: layers.TCPPort(sourcePort),
-		DstPort: layers.TCPPort(destPort),
+	ipLayer := layers.IPv4{
+		SrcIP:    sourceIP,
+		DstIP:    destIP,
+		Protocol: layers.IPProtocolTCP,
 	}
+
+	tcpLayer := layers.TCP{
+		SrcPort: 33457,
+		DstPort: 5432,
+	}
+
+	tcpLayer.SetNetworkLayerForChecksum(&ipLayer)
 
 	buf := gopacket.NewSerializeBuffer()
-	opts := gopacket.SerializeOptions{}
+	opts := gopacket.SerializeOptions{
+		FixLengths:       true,
+		ComputeChecksums: true,
+	}
 
-	if err := gopacket.SerializeLayers(buf, opts, ipLayer, tcpLayer); err != nil {
+	if err := gopacket.SerializeLayers(buf, opts, &ethernetLayer, &ipLayer, &tcpLayer); err != nil {
 		panic(err)
 	}
 
-	packet := gopacket.NewPacket(buf.Bytes(), layers.LayerTypeIPv4, gopacket.Default)
+	packet := gopacket.NewPacket(buf.Bytes(), layers.LayerTypeEthernet, gopacket.Default)
 
 	got := ParsePacket(packet)
 	want := ParsedPacket{
