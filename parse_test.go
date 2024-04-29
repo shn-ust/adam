@@ -12,7 +12,7 @@ import (
 func TestParsePacket(t *testing.T) {
 	var (
 		sourceIP   = net.ParseIP("127.0.0.1")
-		destIP     = net.ParseIP("192.168.0.1")
+		destIP     = net.ParseIP("127.0.0.1")
 		sourcePort = uint16(8080)
 		destPort   = uint16(5432)
 	)
@@ -30,8 +30,8 @@ func TestParsePacket(t *testing.T) {
 	}
 
 	tcpLayer := layers.TCP{
-		SrcPort: 33457,
-		DstPort: 5432,
+		SrcPort: layers.TCPPort(sourcePort),
+		DstPort: layers.TCPPort(destPort),
 	}
 
 	tcpLayer.SetNetworkLayerForChecksum(&ipLayer)
@@ -59,4 +59,5 @@ func TestParsePacket(t *testing.T) {
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("got %+v, want %+v", got, want)
 	}
+
 }
