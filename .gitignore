@@ -21,3 +21,5 @@
 go.work
 
 adam
+*.txt
+helpers/
