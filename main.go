@@ -5,6 +5,8 @@ import (
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/pcap"
+
+	"UST-FireOps/adam/parse"
 )
 
 func main() {
@@ -26,6 +28,6 @@ func main() {
 	packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
 
 	for packet := range packetSource.Packets() {
-		fmt.Printf("%+v\n", ParsePacket(packet))
+		fmt.Printf("%+v\n", parse.ParsePacket(packet))
 	}
 }
