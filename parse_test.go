@@ -56,8 +56,20 @@ func TestParsePacket(t *testing.T) {
 		DestinationPort: layers.TCPPort(destPort),
 	}
 
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("got %+v, want %+v", got, want)
+	if !reflect.DeepEqual(got.SourcePort, want.SourcePort) {
+		t.Errorf("SourcePort mismatch: got %+v, want %+v", got.SourcePort, want.SourcePort)
+	}
+
+	if !reflect.DeepEqual(got.DestinationPort, want.DestinationPort) {
+		t.Errorf("DestinationPort mismatch: got %+v, want %+v", got.DestinationPort, want.DestinationPort)
+	}
+
+	if got.SourceIP.String() != want.SourceIP.String() {
+		t.Errorf("SourceIP mismatch: got %+v, want %+v", got.SourceIP, want.SourceIP)
+	}
+
+	if got.DestinationIP.String() != want.DestinationIP.String() {
+		t.Errorf("DestinationIP mismatch: got %+v, want %+v", got.DestinationIP, want.DestinationIP)
 	}
 
 }
