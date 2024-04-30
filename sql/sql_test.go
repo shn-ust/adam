@@ -1,6 +1,7 @@
 package sql
 
 import (
+	"UST-FireOps/adam/parse"
 	"UST-FireOps/adam/utils"
 	"net"
 	"testing"
@@ -26,7 +27,9 @@ func TestInsertPacket(t *testing.T) {
 		panic("Failed to connect to database")
 	}
 
-	if ok := InsertPacket(packet, db); !ok {
+	parsedPacket := parse.ParsePacket(packet)
+
+	if ok := InsertPacket(parsedPacket, db); !ok {
 		t.Errorf("Failed to insert packet data to table!")
 	}
 

@@ -1,12 +1,13 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/pcap"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 
 	"UST-FireOps/adam/parse"
+	"UST-FireOps/adam/sql"
 )
 
 func main() {
@@ -25,9 +26,20 @@ func main() {
 
 	defer handle.Close()
 
+	db, err := gorm.Open(sqlite.Open("flows.db"), &gorm.Config{
+		SkipDefaultTransaction: true,
+	})
+
+	if err != nil {
+		panic("Failed to connect to database")
+	}
+
 	packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
 
 	for packet := range packetSource.Packets() {
-		fmt.Printf("%+v\n", parse.ParsePacket(packet))
+		parsedPacket := parse.ParsePacket(packet)
+		if !sql.InsertPacket(parsedPacket, db) {
+			panic("Unable to insert data!")
+		}
 	}
 }

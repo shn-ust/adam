@@ -3,7 +3,6 @@ package sql
 import (
 	"time"
 
-	"github.com/google/gopacket"
 	"gorm.io/gorm"
 
 	"UST-FireOps/adam/parse"
@@ -18,17 +17,15 @@ type Flow struct {
 	DestPort   uint16
 }
 
-func InsertPacket(packet gopacket.Packet, db *gorm.DB) bool {
+func InsertPacket(packet parse.ParsedPacket, db *gorm.DB) bool {
 	db.AutoMigrate(&Flow{})
 
-	parsedPacket := parse.ParsePacket(packet)
-
 	res := db.Create(&Flow{
-		Timestamp:  parsedPacket.TimeStamp,
-		SourceIP:   parsedPacket.SourceIP.String(),
-		SourcePort: uint16(parsedPacket.SourcePort),
-		DestIP:     parsedPacket.DestinationIP.String(),
-		DestPort:   uint16(parsedPacket.DestinationPort),
+		Timestamp:  packet.TimeStamp,
+		SourceIP:   packet.SourceIP.String(),
+		SourcePort: uint16(packet.SourcePort),
+		DestIP:     packet.DestinationIP.String(),
+		DestPort:   uint16(packet.DestinationPort),
 	})
 
 	return res.Error == nil
