@@ -5,45 +5,10 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
+
+	"UST-FireOps/adam/utils"
 )
-
-// Helper function to create packet
-func createPacket(sourceIP, destIP net.IP, sourcePort, destPort uint16) gopacket.Packet {
-	ethernetLayer := layers.Ethernet{
-		SrcMAC:       net.HardwareAddr{0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
-		DstMAC:       net.HardwareAddr{0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
-		EthernetType: layers.EthernetTypeIPv4,
-	}
-
-	ipLayer := layers.IPv4{
-		SrcIP:    sourceIP,
-		DstIP:    destIP,
-		Protocol: layers.IPProtocolTCP,
-	}
-
-	tcpLayer := layers.TCP{
-		SrcPort: layers.TCPPort(sourcePort),
-		DstPort: layers.TCPPort(destPort),
-	}
-
-	tcpLayer.SetNetworkLayerForChecksum(&ipLayer)
-
-	buf := gopacket.NewSerializeBuffer()
-	opts := gopacket.SerializeOptions{
-		FixLengths:       true,
-		ComputeChecksums: true,
-	}
-
-	if err := gopacket.SerializeLayers(buf, opts, &ethernetLayer, &ipLayer, &tcpLayer); err != nil {
-		panic(err)
-	}
-
-	packet := gopacket.NewPacket(buf.Bytes(), layers.LayerTypeEthernet, gopacket.Default)
-
-	return packet
-}
 
 func TestParsePacket(t *testing.T) {
 	var (
@@ -53,7 +18,7 @@ func TestParsePacket(t *testing.T) {
 		destPort   = uint16(5432)
 	)
 
-	packet := createPacket(sourceIP, destIP, sourcePort, destPort)
+	packet := utils.CreatePacket(sourceIP, destIP, sourcePort, destPort)
 
 	got := ParsePacket(packet)
 	want := ParsedPacket{

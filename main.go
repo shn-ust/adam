@@ -12,7 +12,7 @@ import (
 func main() {
 	const snapLen = 262144
 
-	networkInterface := "lo"
+	networkInterface := "eth0"
 	handle, err := pcap.OpenLive(networkInterface, snapLen, true, pcap.BlockForever)
 
 	if err != nil {
