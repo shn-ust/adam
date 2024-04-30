@@ -9,14 +9,8 @@ import (
 	"github.com/google/gopacket/layers"
 )
 
-func TestParsePacket(t *testing.T) {
-	var (
-		sourceIP   = net.ParseIP("127.0.0.1")
-		destIP     = net.ParseIP("127.0.0.1")
-		sourcePort = uint16(8080)
-		destPort   = uint16(5432)
-	)
-
+// Helper function to create packet
+func createPacket(sourceIP, destIP net.IP, sourcePort, destPort uint16) gopacket.Packet {
 	ethernetLayer := layers.Ethernet{
 		SrcMAC:       net.HardwareAddr{0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
 		DstMAC:       net.HardwareAddr{0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
@@ -48,6 +42,19 @@ func TestParsePacket(t *testing.T) {
 
 	packet := gopacket.NewPacket(buf.Bytes(), layers.LayerTypeEthernet, gopacket.Default)
 
+	return packet
+}
+
+func TestParsePacket(t *testing.T) {
+	var (
+		sourceIP   = net.ParseIP("127.0.0.1")
+		destIP     = net.ParseIP("127.0.0.1")
+		sourcePort = uint16(8080)
+		destPort   = uint16(5432)
+	)
+
+	packet := createPacket(sourceIP, destIP, sourcePort, destPort)
+
 	got := ParsePacket(packet)
 	want := ParsedPacket{
 		SourceIP:        sourceIP,
@@ -71,5 +78,4 @@ func TestParsePacket(t *testing.T) {
 	if got.DestinationIP.String() != want.DestinationIP.String() {
 		t.Errorf("DestinationIP mismatch: got %+v, want %+v", got.DestinationIP, want.DestinationIP)
 	}
-
 }
