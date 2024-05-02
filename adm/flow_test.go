@@ -1,6 +1,8 @@
 package adm
 
 import (
+	"fmt"
+	"strings"
 	"testing"
 	"time"
 )
@@ -44,11 +46,11 @@ import (
 //	     sourcePort='5432',
 //	     destinationIP='10.0.0.6',
 //	     destinationPort='49530}')]
-type Flow struct {
+type parsedPacket struct {
 	timeStamp  time.Time
 	sourceIP   string
 	sourcePort uint16
-	destiIP    string
+	destIP     string
 	destPort   uint16
 }
 
@@ -64,8 +66,7 @@ func convertToTime(timestamp string) time.Time {
 }
 
 func TestCreateFlow(t *testing.T) {
-	parsedPackets := `
-2024-04-23 07:54:20.343191,10.0.0.4,58776,10.0.0.6,8080
+	packetsDump := `2024-04-23 07:54:20.343191,10.0.0.4,58776,10.0.0.6,8080
 2024-04-23 07:54:20.34324,10.0.0.6,8080,10.0.0.4,58776
 2024-04-23 07:54:20.344677,10.0.0.4,58776,10.0.0.6,8080
 2024-04-23 07:54:20.344678,10.0.0.4,58776,10.0.0.6,8080
@@ -77,13 +78,17 @@ func TestCreateFlow(t *testing.T) {
 2024-04-23 07:54:20.348129,10.0.0.4,58776,10.0.0.6,8080
 2024-04-23 07:54:20.348129,10.0.0.4,58776,10.0.0.6,8080
 2024-04-23 07:54:20.348168,10.0.0.6,8080,10.0.0.4,58776
-2024-04-23 07:54:20.348569,10.0.0.4,58776,10.0.0.6,8080
-`
-	// flows := []Flow{
-	// 	{
-	// 		timeStamp: convertToTime("2024-04-23 07:54:20.343191"),
-	// 		sourceIP: "10.0.0.4",
-	// 		sourcePort: uint16(58776),
-	// 	},
-	// }
+2024-04-23 07:54:20.348569,10.0.0.4,58776,10.0.0.6,8080`
+
+	splitted := strings.Split(packetsDump, "\n")
+	for _, packet := range splitted {
+		packetDetails := strings.Split(packet, ",")
+		tmpParsedPacket := parsedPacket{
+			timeStamp: convertToTime(packetDetails[0]),
+			sourceIP:  packetDetails[1],
+			destIP:    packetDetails[3],
+		}
+
+		fmt.Println(tmpParsedPacket)
+	}
 }
