@@ -20,9 +20,9 @@ func main() {
 		panic(err)
 	}
 
-	if err := handle.SetBPFFilter("port 5000 or port 5001"); err != nil {
-		panic(err)
-	}
+	// if err := handle.SetBPFFilter("port 5000 or port 5001"); err != nil {
+	// 	panic(err)
+	// }
 
 	defer handle.Close()
 
