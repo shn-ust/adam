@@ -8,7 +8,7 @@ import (
 	"UST-FireOps/adam/parse"
 )
 
-type Flow struct {
+type PacketDetail struct {
 	gorm.Model
 	Timestamp  time.Time
 	SourceIP   string
@@ -17,10 +17,11 @@ type Flow struct {
 	DestPort   uint16
 }
 
-func InsertPacket(packet parse.ParsedPacket, db *gorm.DB) bool {
-	db.AutoMigrate(&Flow{})
 
-	res := db.Create(&Flow{
+func InsertPacket(packet parse.ParsedPacket, db *gorm.DB) bool {
+	db.AutoMigrate(&PacketDetail{})
+
+	res := db.Create(&PacketDetail{
 		Timestamp:  packet.TimeStamp,
 		SourceIP:   packet.SourceIP.String(),
 		SourcePort: uint16(packet.SourcePort),

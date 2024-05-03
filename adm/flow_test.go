@@ -1,10 +1,15 @@
 package adm
 
 import (
-	"fmt"
+	"UST-FireOps/adam/sql"
+	"reflect"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
+
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
 // {TimeStamp:2024-04-23 07:54:20.343191 +0000 UTC SourceIP:10.0.0.4 SourcePort:58776 DestinationIP:10.0.0.6 DestinationPort:8080(http-alt)}
@@ -46,13 +51,6 @@ import (
 //	     sourcePort='5432',
 //	     destinationIP='10.0.0.6',
 //	     destinationPort='49530}')]
-type parsedPacket struct {
-	timeStamp  time.Time
-	sourceIP   string
-	sourcePort uint16
-	destIP     string
-	destPort   uint16
-}
 
 func convertToTime(timestamp string) time.Time {
 	layout := "2006-01-02 15:04:05.999999"
@@ -65,14 +63,26 @@ func convertToTime(timestamp string) time.Time {
 	return converted
 }
 
-func TestCreateFlow(t *testing.T) {
+func convertToUint16(number string) uint16 {
+	converted, err := strconv.ParseUint(number, 10, 16)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return uint16(converted)
+
+}
+
+// Helper function to populate DB with values for testing
+func populateDB(db *gorm.DB) {
 	packetsDump := `2024-04-23 07:54:20.343191,10.0.0.4,58776,10.0.0.6,8080
 2024-04-23 07:54:20.34324,10.0.0.6,8080,10.0.0.4,58776
 2024-04-23 07:54:20.344677,10.0.0.4,58776,10.0.0.6,8080
 2024-04-23 07:54:20.344678,10.0.0.4,58776,10.0.0.6,8080
 2024-04-23 07:54:20.344723,10.0.0.6,8080,10.0.0.4,58776
 2024-04-23 07:54:20.346122,10.0.0.6,49530,10.0.0.5,5432
-2024-04-23 07:54:20.347336,10.0.0.5,5432,10.0.0.6,49530 
+2024-04-23 07:54:20.347336,10.0.0.5,5432,10.0.0.6,49530
 2024-04-23 07:54:20.347346,10.0.0.6,49530,10.0.0.5,5432
 2024-04-23 07:54:20.347507,10.0.0.6,8080,10.0.0.4,58776
 2024-04-23 07:54:20.348129,10.0.0.4,58776,10.0.0.6,8080
@@ -81,14 +91,74 @@ func TestCreateFlow(t *testing.T) {
 2024-04-23 07:54:20.348569,10.0.0.4,58776,10.0.0.6,8080`
 
 	splitted := strings.Split(packetsDump, "\n")
-	for _, packet := range splitted {
-		packetDetails := strings.Split(packet, ",")
-		tmpParsedPacket := parsedPacket{
-			timeStamp: convertToTime(packetDetails[0]),
-			sourceIP:  packetDetails[1],
-			destIP:    packetDetails[3],
-		}
+	var packetDetails []sql.PacketDetail
 
-		fmt.Println(tmpParsedPacket)
+	for _, packet := range splitted {
+		detail := strings.Split(packet, ",")
+		tmpFLow := sql.PacketDetail{
+			Timestamp:  convertToTime(detail[0]),
+			SourceIP:   detail[1],
+			SourcePort: convertToUint16(detail[2]),
+			DestIP:     detail[3],
+			DestPort:   convertToUint16(detail[4]),
+		}
+		packetDetails = append(packetDetails, tmpFLow)
+	}
+
+	db.AutoMigrate(&sql.PacketDetail{})
+	for _, packetDetail := range packetDetails {
+		db.Create(&packetDetail)
+	}
+}
+
+func TestCreateFlow(t *testing.T) {
+	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{
+		SkipDefaultTransaction: true,
+	})
+
+	if err != nil {
+		panic(err)
+	}
+
+	populateDB(db)
+
+	got := CreateFlow(db)
+	want := []Flow{
+		{
+			StartTime:  convertToTime("2024-04-23 07:54:20.343191"),
+			EndTime:    convertToTime("2024-04-23 07:54:20.348569"),
+			SourceIP:   "10.0.0.4",
+			SourcePort: uint16(58776),
+			DestIP:     "10.0.0.6",
+			DestPort:   uint16(8080),
+		},
+		{
+			StartTime:  convertToTime("2024-04-23 07:54:20.343240"),
+			EndTime:    convertToTime("2024-04-23 07:54:20.348168"),
+			SourceIP:   "10.0.0.6",
+			SourcePort: uint16(8080),
+			DestIP:     "10.0.0.4",
+			DestPort:   uint16(58776),
+		},
+		{
+			StartTime:  convertToTime("2024-04-23 07:54:20.346122"),
+			EndTime:    convertToTime("2024-04-23 07:54:20.347346"),
+			SourceIP:   "10.0.0.6",
+			SourcePort: uint16(49530),
+			DestIP:     "10.0.0.5",
+			DestPort:   uint16(5432),
+		},
+		{
+			StartTime:  convertToTime("2024-04-23 07:54:20.347336"),
+			EndTime:    convertToTime("2024-04-23 07:54:20.347336"),
+			SourceIP:   "10.0.0.5",
+			SourcePort: uint16(5432),
+			DestIP:     "10.0.0.6",
+			DestPort:   uint16(49530),
+		},
+	}
+
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("got %+v, want %+v", got, want)
 	}
 }
