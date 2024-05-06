@@ -10,11 +10,11 @@ import (
 )
 
 type ParsedPacket struct {
-	TimeStamp       time.Time
-	SourceIP        net.IP
-	SourcePort      layers.TCPPort
-	DestinationIP   net.IP
-	DestinationPort layers.TCPPort
+	TimeStamp time.Time
+	SrcIP     net.IP
+	SrcPort   layers.TCPPort
+	DestIP    net.IP
+	DestPort  layers.TCPPort
 }
 
 // Used to extract the necessary information from a packet
@@ -27,10 +27,10 @@ func ParsePacket(packet gopacket.Packet) ParsedPacket {
 	sourcePort, destPort := transportFlow.Endpoints()
 
 	return ParsedPacket{
-		TimeStamp:       timeStamp,
-		SourceIP:        sourceIP.Raw(),
-		SourcePort:      layers.TCPPort(binary.BigEndian.Uint16(sourcePort.Raw())),
-		DestinationIP:   destIP.Raw(),
-		DestinationPort: layers.TCPPort(binary.BigEndian.Uint16(destPort.Raw())),
+		TimeStamp: timeStamp,
+		SrcIP:     sourceIP.Raw(),
+		SrcPort:   layers.TCPPort(binary.BigEndian.Uint16(sourcePort.Raw())),
+		DestIP:    destIP.Raw(),
+		DestPort:  layers.TCPPort(binary.BigEndian.Uint16(destPort.Raw())),
 	}
 }

@@ -9,15 +9,15 @@ import (
 )
 
 // Flow is defined as a tuple containing
-// (StartTime, EndTime, SourceIP, SourcePort, DestinationIP, DestinationPort)
+// (StartTime, EndTime, SrcIP, SrcPort, DestinationIP, DestinationPort)
 // It represents when a request started and when it ended together with IP and Port details
 type Flow struct {
-	StartTime  time.Time
-	EndTime    time.Time
-	SourceIP   string
-	SourcePort uint16
-	DestIP     string
-	DestPort   uint16
+	StartTime time.Time
+	EndTime   time.Time
+	SrcIP     string
+	SrcPort   uint16
+	DestIP    string
+	DestPort  uint16
 }
 
 // This functions takes a list of packets (stored in SQLite inmemory database)
@@ -35,20 +35,20 @@ func CreateFlow(db *gorm.DB) []Flow {
 	for _, packet := range sortedPacketDetails {
 		var firstOccurence sql.PacketDetail
 		var count int64
-		db.Model(&sql.PacketDetail{}).Where("source_ip = ?", packet.SourceIP).Where("source_port = ?", packet.SourcePort).Where("dest_ip = ?", packet.DestIP).Where("dest_port = ?", packet.DestPort).Where("timestamp > ?", packet.Timestamp).Count(&count)
+		db.Model(&sql.PacketDetail{}).Where("src_ip = ?", packet.SrcIP).Where("src_port = ?", packet.SrcPort).Where("dest_ip = ?", packet.DestIP).Where("dest_port = ?", packet.DestPort).Where("timestamp > ?", packet.Timestamp).Count(&count)
 
 		// '0', if there doesn't exists a packet having a greater timestamp than the current one
 		if count == 0 {
 			// Find the first occurence
-			db.Where("source_ip = ?", packet.SourceIP).Where("source_port = ?", packet.SourcePort).Where("dest_ip = ?", packet.DestIP).Where("dest_port = ?", packet.DestPort).Order("timestamp asc").First(&firstOccurence)
+			db.Where("src_ip = ?", packet.SrcIP).Where("src_port = ?", packet.SrcPort).Where("dest_ip = ?", packet.DestIP).Where("dest_port = ?", packet.DestPort).Order("timestamp asc").First(&firstOccurence)
 
 			tmpFlow := Flow{
-				StartTime:  firstOccurence.Timestamp,
-				EndTime:    packet.Timestamp,
-				SourceIP:   packet.SourceIP,
-				SourcePort: packet.SourcePort,
-				DestIP:     packet.DestIP,
-				DestPort:   packet.DestPort,
+				StartTime: firstOccurence.Timestamp,
+				EndTime:   packet.Timestamp,
+				SrcIP:     packet.SrcIP,
+				SrcPort:   packet.SrcPort,
+				DestIP:    packet.DestIP,
+				DestPort:  packet.DestPort,
 			}
 
 			// Append the values to flows

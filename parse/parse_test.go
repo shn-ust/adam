@@ -22,25 +22,25 @@ func TestParsePacket(t *testing.T) {
 
 	got := ParsePacket(packet)
 	want := ParsedPacket{
-		SourceIP:        sourceIP,
-		SourcePort:      layers.TCPPort(sourcePort),
-		DestinationIP:   destIP,
-		DestinationPort: layers.TCPPort(destPort),
+		SrcIP:    sourceIP,
+		SrcPort:  layers.TCPPort(sourcePort),
+		DestIP:   destIP,
+		DestPort: layers.TCPPort(destPort),
 	}
 
-	if !reflect.DeepEqual(got.SourcePort, want.SourcePort) {
-		t.Errorf("SourcePort mismatch: got %+v, want %+v", got.SourcePort, want.SourcePort)
+	if !reflect.DeepEqual(got.SrcPort, want.SrcPort) {
+		t.Errorf("SourcePort mismatch: got %+v, want %+v", got.SrcPort, want.SrcPort)
 	}
 
-	if !reflect.DeepEqual(got.DestinationPort, want.DestinationPort) {
-		t.Errorf("DestinationPort mismatch: got %+v, want %+v", got.DestinationPort, want.DestinationPort)
+	if !reflect.DeepEqual(got.DestPort, want.DestPort) {
+		t.Errorf("DestinationPort mismatch: got %+v, want %+v", got.DestPort, want.DestPort)
 	}
 
-	if got.SourceIP.String() != want.SourceIP.String() {
-		t.Errorf("SourceIP mismatch: got %+v, want %+v", got.SourceIP, want.SourceIP)
+	if got.SrcIP.String() != want.SrcIP.String() {
+		t.Errorf("SourceIP mismatch: got %+v, want %+v", got.SrcIP, want.SrcIP)
 	}
 
-	if got.DestinationIP.String() != want.DestinationIP.String() {
-		t.Errorf("DestinationIP mismatch: got %+v, want %+v", got.DestinationIP, want.DestinationIP)
+	if got.DestIP.String() != want.DestIP.String() {
+		t.Errorf("DestinationIP mismatch: got %+v, want %+v", got.DestIP, want.DestIP)
 	}
 }
