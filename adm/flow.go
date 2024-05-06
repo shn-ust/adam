@@ -8,6 +8,9 @@ import (
 	"gorm.io/gorm"
 )
 
+// Flow is defined as a tuple containing
+// (StartTime, EndTime, SourceIP, SourcePort, DestinationIP, DestinationPort)
+// It represents when a request started and when it ended together with IP and Port details
 type Flow struct {
 	StartTime  time.Time
 	EndTime    time.Time
@@ -17,10 +20,8 @@ type Flow struct {
 	DestPort   uint16
 }
 
-// Flow is described as
-// (StartTime, EndTime, SourceIP, SourcePort, DestinationIP, DestinationPort)
-// This functions takes a list of packets (stored in SQLite in memory database)
-// and returns the Flow of packets
+// This functions takes a list of packets (stored in SQLite inmemory database)
+// and returns the 'Flow' of packets
 func CreateFlow(db *gorm.DB) []Flow {
 	var flows []Flow
 
@@ -54,6 +55,5 @@ func CreateFlow(db *gorm.DB) []Flow {
 			flows = append(flows, tmpFlow)
 		}
 	}
-
 	return flows
 }
