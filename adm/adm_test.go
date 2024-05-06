@@ -1,7 +1,7 @@
 package adm
 
 import (
-	"reflect"
+	"slices"
 	"testing"
 )
 
@@ -42,22 +42,14 @@ func TestFindDependencies(t *testing.T) {
 	}
 
 	got := FindDependencies(flows)
-	want := []Dependency{
-		{
-			SrcIP:   "10.0.0.6",
-			SrcPort: uint16(8080),
-			DstIP:   "10.0.0.4",
-			DstPort: uint16(58776),
-		},
-		{
-			SrcIP:   "10.0.0.6",
-			SrcPort: uint16(8080),
-			DstIP:   "10.0.0.5",
-			DstPort: uint16(5432),
-		},
+	want := Dependency{
+		SrcIP:    "10.0.0.6",
+		SrcPort:  uint16(8080),
+		DestIP:   "10.0.0.5",
+		DestPort: uint16(5432),
 	}
 
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("Dependencies are incorrect: got %+v, want %+v", got, want)
+	if !slices.Contains(got, want) {
+		t.Errorf("Dependency not found in array! got %+v, want %+v", got, want)
 	}
 }

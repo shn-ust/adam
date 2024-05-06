@@ -1,6 +1,7 @@
 package adm
 
 import (
+	"fmt"
 	"time"
 
 	"UST-FireOps/adam/sql"
@@ -18,6 +19,11 @@ type Flow struct {
 	SrcPort   uint16
 	DestIP    string
 	DestPort  uint16
+}
+
+// Concatenates the IP and Port of the destination service
+func (f Flow) DestServ() string {
+	return fmt.Sprintf("%s:%d", f.DestIP, f.DestPort)
 }
 
 // This functions takes a list of packets (stored in SQLite inmemory database)
