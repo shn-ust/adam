@@ -1,3 +1,6 @@
+# ADAM ![](https://github.com/shn-ust/adam/actions/workflows/go.yml/badge.svg)
+Find dependencies of an application in a distributed environment.
+
 ## Prerequisites
 
 - libpcap-dev
