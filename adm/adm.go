@@ -78,7 +78,7 @@ func FindDependencies(flows []Flow) []Dependency {
 	}
 
 	for _, dependency := range trackedDependencies {
-		aDestServ := destServ(dependency.SrcIP, dependency.SrcPort) // A's Destination Server
+		aDestServ := destServ(dependency.SrcIP, dependency.SrcPort)  // A's Destination Server
 
 		if dweight[dependency]/float32(serviceUsage[aDestServ]) >= threshold {
 			dependencies = append(dependencies, dependency)
