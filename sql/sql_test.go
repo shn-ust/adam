@@ -4,6 +4,7 @@ import (
 	"UST-FireOps/adam/parse"
 	"UST-FireOps/adam/utils"
 	"net"
+	"sync"
 	"testing"
 
 	"gorm.io/driver/sqlite"
@@ -29,7 +30,9 @@ func TestInsertPacket(t *testing.T) {
 
 	parsedPacket := parse.ParsePacket(packet)
 
-	if ok := InsertPacket(parsedPacket, db); !ok {
+	var mu sync.Mutex
+
+	if ok := InsertPacket(parsedPacket, db, &mu); !ok {
 		t.Errorf("Failed to insert packet data to table!")
 	}
 

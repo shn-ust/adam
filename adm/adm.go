@@ -52,7 +52,7 @@ func FindDependencies(flows []Flow) []Dependency {
 
 		// Iterate through previous flow records
 		for _, pfl := range prevInbounds {
-			if isTimeBetween(flow, pfl) {
+			if isTimeBetween(flow, pfl) && flow.SrcIP == pfl.DestIP {
 				tmpDependency := Dependency{
 					SrcIP:    pfl.DestIP,
 					SrcPort:  pfl.DestPort,
@@ -78,7 +78,7 @@ func FindDependencies(flows []Flow) []Dependency {
 	}
 
 	for _, dependency := range trackedDependencies {
-		aDestServ := destServ(dependency.SrcIP, dependency.SrcPort)  // A's Destination Server
+		aDestServ := destServ(dependency.SrcIP, dependency.SrcPort) // A's Destination Server
 
 		if dweight[dependency]/float32(serviceUsage[aDestServ]) >= threshold {
 			dependencies = append(dependencies, dependency)

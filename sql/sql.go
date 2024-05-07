@@ -1,6 +1,7 @@
 package sql
 
 import (
+	"sync"
 	"time"
 
 	"gorm.io/gorm"
@@ -17,7 +18,10 @@ type PacketDetail struct {
 	DestPort  uint16
 }
 
-func InsertPacket(packet parse.ParsedPacket, db *gorm.DB) bool {
+func InsertPacket(packet parse.ParsedPacket, db *gorm.DB, mutex *sync.Mutex) bool {
+	mutex.Lock()
+	defer mutex.Unlock()
+
 	db.AutoMigrate(&PacketDetail{})
 
 	res := db.Create(&PacketDetail{
