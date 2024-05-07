@@ -19,6 +19,8 @@ import (
 var dbMutex sync.Mutex
 
 func analyze(db *gorm.DB) {
+	fmt.Println("Finding dependency")
+
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
 
@@ -31,7 +33,14 @@ func analyze(db *gorm.DB) {
 	flows := adm.CreateFlow(db)
 	dependencies := adm.FindDependencies(flows)
 
-	fmt.Println(dependencies)
+	go func() {
+		for _, dependency := range dependencies {
+			trueDependency := adm.CheckStatus(dependency)
+			if trueDependency {
+				fmt.Println(dependency)
+			}
+		}
+	}()
 
 	if err := db.Delete(&records).Error; err != nil {
 		log.Fatal("Unable to delete records: ", err)
@@ -61,7 +70,8 @@ func main() {
 	}
 
 	// Run the analyzer periodically
-	ticker := time.NewTicker(30 * time.Second)
+	const interval = 15
+	ticker := time.NewTicker(interval * time.Second)
 	go func() {
 		for {
 			select {
