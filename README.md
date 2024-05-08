@@ -6,10 +6,14 @@ Find dependencies of an application in a distributed environment.
 
 ### Building the image
 
-`$ docker build -t adam .`
+```
+$ docker build -t adam .
+```
 
 ### Running the image
-`$ docker run --network host -it adam`
+```
+$ docker run --network host -it adam
+```
 
 ## Papers
 
