@@ -1,6 +1,18 @@
 # ADAM ![](https://github.com/shn-ust/adam/actions/workflows/go.yml/badge.svg)
 
-Find dependencies of an application in a distributed environment.
+Adam is used to find the dependencies of an application in a distributed environment. 
+
+It observes the network traffic in order to find the dependencies. 
+
+
+
+## ADAM Architecture
+![adam-architecture (1)](https://github.com/shn-ust/adam/assets/142196840/3e6d58cb-9ae3-47fe-91a2-cf11ce685d41)
+
+ADAM needs to be run on the machine where the dependencies are to be mapped.
+After finding the dependencies, ADAM sends the data back to the collector using [zeromq](https://zeromq.org/). The collector stores the data (dependencies) to a Redis database.
+Multiple "ADAM" instances can be run at a time. 
+
 
 ## Getting started
 
