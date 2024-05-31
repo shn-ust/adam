@@ -18,6 +18,7 @@ import (
 
 var dbMutex sync.Mutex
 
+// analyze is used to find the dependencies from the stored packet data
 func analyze(db *gorm.DB) {
 	fmt.Println("Finding dependency")
 

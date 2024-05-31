@@ -17,7 +17,11 @@ type ParsedPacket struct {
 	DestPort  layers.TCPPort
 }
 
-// Used to extract the necessary information from a packet
+// ParsePacket is used to extract the necessary information from a packet
+// The informations are:
+// a. timestamp
+// b. source ip and port
+// c. destination ip and port
 func ParsePacket(packet gopacket.Packet) ParsedPacket {
 	timeStamp := packet.Metadata().Timestamp
 	netFlow := packet.NetworkLayer().NetworkFlow()
