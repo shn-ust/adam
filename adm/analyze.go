@@ -31,9 +31,10 @@ func Analyze(db *gorm.DB, pushSock *goczmq.Sock, dbMutex *sync.Mutex) {
 	go func() {
 		for _, dependency := range dependencies {
 			trueDependency := CheckStatus(dependency)
+
 			if trueDependency {
 				log.Println(dependency)
-				dependencyStr := fmt.Sprintf("(%s, %d, %s, %d)", dependency.SrcIP, dependency.SrcPort, dependency.DestIP, dependency.DestPort)
+				dependencyStr := fmt.Sprintf("%s:%d,%s:%d", dependency.SrcIP, dependency.SrcPort, dependency.DestIP, dependency.DestPort)
 				err := pushSock.SendFrame([]byte(dependencyStr), 0)
 
 				if err != nil {

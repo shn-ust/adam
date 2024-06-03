@@ -37,6 +37,7 @@ func main() {
 
 	defer pushSock.Destroy()
 
+	// Monitor the network interface
 	networkInterface := "lo"
 	handle, err := pcap.OpenLive(networkInterface, snapLen, true, pcap.BlockForever)
 
