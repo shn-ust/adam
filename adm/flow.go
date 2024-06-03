@@ -26,7 +26,7 @@ func (f Flow) DestServ() string {
 	return fmt.Sprintf("%s:%d", f.DestIP, f.DestPort)
 }
 
-// This functions takes a list of packets (stored in SQLite inmemory database)
+// CreateFlow takes a list of packets (stored in SQLite inmemory database)
 // and returns the 'Flow' of packets
 func CreateFlow(db *gorm.DB) []Flow {
 	var flows []Flow

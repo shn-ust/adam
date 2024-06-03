@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/pcap"
+	"github.com/zeromq/goczmq"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
@@ -16,40 +17,27 @@ import (
 	"UST-FireOps/adam/sql"
 )
 
-var dbMutex sync.Mutex
-
-func analyze(db *gorm.DB) {
-	fmt.Println("Finding dependency")
-
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
-
-	var records []sql.PacketDetail
-
-	if err := db.Find(&records).Error; err != nil {
-		log.Fatal("Unable to list records:", err)
-	}
-
-	flows := adm.CreateFlow(db)
-	dependencies := adm.FindDependencies(flows)
-
-	go func() {
-		for _, dependency := range dependencies {
-			trueDependency := adm.CheckStatus(dependency)
-			if trueDependency {
-				fmt.Println(dependency)
-			}
-		}
-	}()
-
-	if err := db.Delete(&records).Error; err != nil {
-		log.Fatal("Unable to delete records: ", err)
-	}
-}
+var (
+	dbMutex    sync.Mutex
+	zeroMQIP   = "127.0.0.1"
+	zeroMQPort = 5555
+)
 
 func main() {
 	const snapLen = 1600
 
+	collectorAddr := fmt.Sprintf("tcp://%s:%d", zeroMQIP, zeroMQPort)
+	pushSock, err := goczmq.NewPush(collectorAddr)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("Push socket created")
+
+	defer pushSock.Destroy()
+
+	// Monitor the network interface
 	networkInterface := "lo"
 	handle, err := pcap.OpenLive(networkInterface, snapLen, true, pcap.BlockForever)
 
@@ -76,7 +64,7 @@ func main() {
 		for {
 			select {
 			case <-ticker.C:
-				analyze(db)
+				adm.Analyze(db, pushSock, &dbMutex)
 			}
 		}
 	}()

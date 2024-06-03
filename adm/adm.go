@@ -12,7 +12,7 @@ type Dependency struct {
 	DestPort uint16
 }
 
-// Check if the timeframe of a flow is encompassed
+// isTimeBetween is used to find if the timeframe of a flow is encompassed
 // within the timeframe of another flow
 func isTimeBetween(f1, f2 Flow) bool {
 	if (f1.StartTime.After(f2.StartTime) || f1.StartTime.Equal(f2.StartTime)) && (f1.EndTime.Before(f2.EndTime) || f1.EndTime.Equal(f2.EndTime)) {
@@ -25,7 +25,8 @@ func destServ(ip string, port uint16) string {
 	return fmt.Sprintf("%s:%d", ip, port)
 }
 
-// Find depencencies from flows
+// FindDependencies is used to find the dependencies from the flows
+// Refer NSDMiner to get a better understanding of the algorithm used
 func FindDependencies(flows []Flow) []Dependency {
 	const threshold float32 = 0.5
 	var prevInbounds []Flow
