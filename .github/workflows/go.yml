@@ -16,8 +16,8 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Install libpcap-dev
-      run: sudo apt-get install libpcap-dev
+    - name: Install dependencies
+      run: sudo apt-get install -y libpcap-dev libsodium-dev libzmq3-dev libczmq-dev 
 
 
     - name: Set up Go
