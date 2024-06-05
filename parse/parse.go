@@ -22,19 +22,37 @@ type ParsedPacket struct {
 // a. timestamp
 // b. source ip and port
 // c. destination ip and port
-func ParsePacket(packet gopacket.Packet) ParsedPacket {
+func ParsePacket(packet gopacket.Packet) *ParsedPacket {
+	var (
+		sourceIP   gopacket.Endpoint
+		sourcePort gopacket.Endpoint
+		destIP     gopacket.Endpoint
+		destPort   gopacket.Endpoint
+	)
+
 	timeStamp := packet.Metadata().Timestamp
-	netFlow := packet.NetworkLayer().NetworkFlow()
-	sourceIP, destIP := netFlow.Endpoints()
+	networkLayer := packet.NetworkLayer()
 
-	transportFlow := packet.TransportLayer().TransportFlow()
-	sourcePort, destPort := transportFlow.Endpoints()
-
-	return ParsedPacket{
-		TimeStamp: timeStamp,
-		SrcIP:     sourceIP.Raw(),
-		SrcPort:   layers.TCPPort(binary.BigEndian.Uint16(sourcePort.Raw())),
-		DestIP:    destIP.Raw(),
-		DestPort:  layers.TCPPort(binary.BigEndian.Uint16(destPort.Raw())),
+	if networkLayer != nil {
+		netFlow := networkLayer.NetworkFlow()
+		sourceIP, destIP = netFlow.Endpoints()
 	}
+
+	transportLayer := packet.TransportLayer()
+	if transportLayer != nil {
+		transportFlow := transportLayer.TransportFlow()
+		sourcePort, destPort = transportFlow.Endpoints()
+	}
+
+	if networkLayer != nil && transportLayer != nil {
+		return &ParsedPacket{
+			TimeStamp: timeStamp,
+			SrcIP:     sourceIP.Raw(),
+			SrcPort:   layers.TCPPort(binary.BigEndian.Uint16(sourcePort.Raw())),
+			DestIP:    destIP.Raw(),
+			DestPort:  layers.TCPPort(binary.BigEndian.Uint16(destPort.Raw())),
+		}
+	}
+
+	return nil
 }
