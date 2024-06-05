@@ -74,8 +74,10 @@ func main() {
 	for packet := range packetSource.Packets() {
 		parsedPacket := parse.ParsePacket(packet)
 
-		if !sql.InsertPacket(parsedPacket, db, &dbMutex) {
-			log.Fatal("Unable to insert data!")
+		if parsedPacket != nil {
+			if !sql.InsertPacket(parsedPacket, db, &dbMutex) {
+				log.Fatal("Unable to insert data!")
+			}
 		}
 	}
 }

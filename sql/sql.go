@@ -18,7 +18,7 @@ type PacketDetail struct {
 	DestPort  uint16
 }
 
-func InsertPacket(packet parse.ParsedPacket, db *gorm.DB, mutex *sync.Mutex) bool {
+func InsertPacket(packet *parse.ParsedPacket, db *gorm.DB, mutex *sync.Mutex) bool {
 	mutex.Lock()
 	defer mutex.Unlock()
 
