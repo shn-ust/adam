@@ -18,7 +18,7 @@ type PacketDetail struct {
 	DestPort  uint16
 }
 
-// convertParsedPacket is used to create an array of "PacketDetail" 
+// convertParsedPacket is used to create an array of "PacketDetail"
 // from an array of "ParsedPacket"
 func convertParsedPacket(packets []*parse.ParsedPacket) []PacketDetail {
 	var details []PacketDetail
@@ -54,7 +54,7 @@ func InsertPacket(packet *parse.ParsedPacket, db *gorm.DB, mutex *sync.Mutex) bo
 }
 
 // InsertPacketInBatch inserts a slice of packets
-func InsertPacketInBatch(db *gorm.DB, mutex *sync.Mutex, packets []*parse.ParsedPacket) error {
+func InsertPacketsInBatch(db *gorm.DB, mutex *sync.Mutex, packets []*parse.ParsedPacket) error {
 	mutex.Lock()
 	defer mutex.Unlock()
 

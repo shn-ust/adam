@@ -37,7 +37,7 @@ func TestInsertPacket(t *testing.T) {
 	}
 }
 
-func TestInsertPacketInBatch(t *testing.T) {
+func TestInsertPacketsInBatch(t *testing.T) {
 	var (
 		sourceIP   = net.ParseIP("127.0.0.1")
 		sourcePort = uint16(8080)
@@ -52,13 +52,7 @@ func TestInsertPacketInBatch(t *testing.T) {
 	packet := utils.CreatePacket(sourceIP, destIP, sourcePort, destPort)
 	packet2 := utils.CreatePacket(sourceIP2, destIP2, sourcePort2, destPort2)
 
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{
-		SkipDefaultTransaction: true,
-	})
-
-	if err != nil {
-		t.Error("Failed to connect to database")
-	}
+	db, _ := gorm.Open(sqlite.Open(":memory:"))
 
 	parsedPacket := parse.ParsePacket(packet)
 	parsedPacket2 := parse.ParsePacket(packet2)
@@ -66,7 +60,7 @@ func TestInsertPacketInBatch(t *testing.T) {
 	var mu sync.Mutex
 
 	packets := []*parse.ParsedPacket{parsedPacket, parsedPacket2}
-	if err := InsertPacketInBatch(db, &mu, packets); err != nil {
+	if err := InsertPacketsInBatch(db, &mu, packets); err != nil {
 		t.Errorf("Error inserting data in batches: %v", err)
 	}
 

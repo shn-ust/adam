@@ -71,13 +71,19 @@ func main() {
 
 	// Write the packets to a database
 	packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
+	packets := make([]*parse.ParsedPacket, 0, 100)
+
 	for packet := range packetSource.Packets() {
 		parsedPacket := parse.ParsePacket(packet)
-
 		if parsedPacket != nil {
-			if !sql.InsertPacket(parsedPacket, db, &dbMutex) {
-				log.Fatal("Unable to insert data!")
+			packets = append(packets, parsedPacket)
+		}
+
+		if len(packets) >= 128 {
+			if err := sql.InsertPacketsInBatch(db, &dbMutex, packets); err != nil {
+				log.Fatalf("unable to insert data to sqlite: %v", err)
 			}
+			packets = packets[:0]
 		}
 	}
 }
