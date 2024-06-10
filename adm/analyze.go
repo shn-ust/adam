@@ -11,6 +11,16 @@ import (
 	"UST-FireOps/adam/sql"
 )
 
+// idFromRecords is used to return the ID of the records
+// Used for batch delete
+func idFromRecords(records []sql.PacketDetail) []uint {
+	var rec []uint
+	for _, record := range records {
+		rec = append(rec, record.ID)
+	}
+	return rec
+}
+
 // Analyze is used to find the dependencies from the stored packet data
 // If dependencies are found, it sends them to the collector using zeromq's push-pull pattern
 func Analyze(db *gorm.DB, pushSock *goczmq.Sock, dbMutex *sync.Mutex) {
@@ -28,23 +38,23 @@ func Analyze(db *gorm.DB, pushSock *goczmq.Sock, dbMutex *sync.Mutex) {
 	flows := CreateFlow(db)
 	dependencies := FindDependencies(flows)
 
-	go func() {
-		for _, dependency := range dependencies {
-			trueDependency := CheckStatus(dependency)
+	for _, dependency := range dependencies {
+		trueDependency := CheckStatus(dependency)
 
-			if trueDependency {
-				log.Println(dependency)
-				dependencyStr := fmt.Sprintf("%s:%d,%s:%d", dependency.SrcIP, dependency.SrcPort, dependency.DestIP, dependency.DestPort)
-				err := pushSock.SendFrame([]byte(dependencyStr), 0)
+		if trueDependency {
+			log.Println(dependency)
+			dependencyStr := fmt.Sprintf("%s:%d,%s:%d", dependency.SrcIP, dependency.SrcPort, dependency.DestIP, dependency.DestPort)
+			err := pushSock.SendFrame([]byte(dependencyStr), 0)
 
-				if err != nil {
-					log.Fatal(err)
-				}
+			if err != nil {
+				log.Fatal(err)
 			}
 		}
-	}()
+	}
 
-	if err := db.Delete(&records).Error; err != nil {
-		log.Fatal("Unable to delete records: ", err)
+	if len(records) > 0 {
+		if err := db.Unscoped().Delete(&sql.PacketDetail{}, idFromRecords(records)).Error; err != nil {
+			log.Fatal("Unable to delete records: ", err)
+		}
 	}
 }

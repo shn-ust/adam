@@ -23,9 +23,12 @@ var (
 	zeroMQPort = 5555
 )
 
-func main() {
-	const snapLen = 1600
+const (
+	maxPackets = 128
+	snapLen    = 1600
+)
 
+func main() {
 	collectorAddr := fmt.Sprintf("tcp://%s:%d", zeroMQIP, zeroMQPort)
 	pushSock, err := goczmq.NewPush(collectorAddr)
 
@@ -45,20 +48,24 @@ func main() {
 		log.Fatal("Unable to listen on interface", err)
 	}
 
-	// if err := handle.SetBPFFilter("port 5000 or port 5001"); err != nil {
-	// 	panic(err)
-	// }
-
 	defer handle.Close()
 
-	db, err := gorm.Open(sqlite.Open("flows.db"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open("flows.db"), &gorm.Config{
+		SkipDefaultTransaction: true,
+	})
 
 	if err != nil {
 		log.Fatal("Failed to connect to database", err)
 	}
 
+	// Optimizing the database
+	db.Exec("PRAGMA journal_mode = MEMORY;")
+	db.Exec("PRAGMA synchronous = OFF;")
+
+	db.AutoMigrate(&sql.PacketDetail{})
+
 	// Run the analyzer periodically
-	const interval = 15
+	const interval = 60
 	ticker := time.NewTicker(interval * time.Second)
 	go func() {
 		for {
@@ -71,13 +78,19 @@ func main() {
 
 	// Write the packets to a database
 	packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
+	packets := make([]*parse.ParsedPacket, 0, maxPackets)
+
 	for packet := range packetSource.Packets() {
 		parsedPacket := parse.ParsePacket(packet)
-
 		if parsedPacket != nil {
-			if !sql.InsertPacket(parsedPacket, db, &dbMutex) {
-				log.Fatal("Unable to insert data!")
+			packets = append(packets, parsedPacket)
+		}
+
+		if len(packets) >= maxPackets {
+			if err := sql.InsertPacketsInBatch(db, &dbMutex, packets); err != nil {
+				log.Fatalf("unable to insert data to sqlite: %v", err)
 			}
+			packets = packets[:0]
 		}
 	}
 }

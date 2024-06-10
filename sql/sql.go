@@ -10,7 +10,7 @@ import (
 )
 
 type PacketDetail struct {
-	gorm.Model
+	ID        uint `gorm:"primarykey"`
 	Timestamp time.Time
 	SrcIP     string
 	SrcPort   uint16
@@ -18,19 +18,36 @@ type PacketDetail struct {
 	DestPort  uint16
 }
 
-func InsertPacket(packet *parse.ParsedPacket, db *gorm.DB, mutex *sync.Mutex) bool {
+// convertParsedPacket is used to create an array of "PacketDetail"
+// from an array of "ParsedPacket"
+func convertParsedPacket(packets []*parse.ParsedPacket) []PacketDetail {
+	var details []PacketDetail
+
+	for _, packet := range packets {
+		details = append(details, PacketDetail{
+			Timestamp: packet.TimeStamp,
+			SrcIP:     packet.SrcIP.String(),
+			SrcPort:   uint16(packet.SrcPort),
+			DestIP:    packet.DestIP.String(),
+			DestPort:  uint16(packet.DestPort),
+		})
+	}
+
+	return details
+}
+
+// InsertPacketInBatch inserts an array of packets into the database
+func InsertPacketsInBatch(db *gorm.DB, mutex *sync.Mutex, packets []*parse.ParsedPacket) error {
 	mutex.Lock()
 	defer mutex.Unlock()
 
-	db.AutoMigrate(&PacketDetail{})
+	const batchSize = 256
 
-	res := db.Create(&PacketDetail{
-		Timestamp: packet.TimeStamp,
-		SrcIP:     packet.SrcIP.String(),
-		SrcPort:   uint16(packet.SrcPort),
-		DestIP:    packet.DestIP.String(),
-		DestPort:  uint16(packet.DestPort),
+	return db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.CreateInBatches(convertParsedPacket(packets), batchSize).Error; err != nil {
+			return err
+		}
+
+		return nil
 	})
-
-	return res.Error == nil
 }
