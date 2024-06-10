@@ -10,7 +10,7 @@ import (
 )
 
 type PacketDetail struct {
-	gorm.Model
+	ID        uint `gorm:"primarykey"`
 	Timestamp time.Time
 	SrcIP     string
 	SrcPort   uint16
@@ -36,29 +36,10 @@ func convertParsedPacket(packets []*parse.ParsedPacket) []PacketDetail {
 	return details
 }
 
-func InsertPacket(packet *parse.ParsedPacket, db *gorm.DB, mutex *sync.Mutex) bool {
-	mutex.Lock()
-	defer mutex.Unlock()
-
-	db.AutoMigrate(&PacketDetail{})
-
-	res := db.Create(&PacketDetail{
-		Timestamp: packet.TimeStamp,
-		SrcIP:     packet.SrcIP.String(),
-		SrcPort:   uint16(packet.SrcPort),
-		DestIP:    packet.DestIP.String(),
-		DestPort:  uint16(packet.DestPort),
-	})
-
-	return res.Error == nil
-}
-
-// InsertPacketInBatch inserts a slice of packets
+// InsertPacketInBatch inserts an array of packets into the database
 func InsertPacketsInBatch(db *gorm.DB, mutex *sync.Mutex, packets []*parse.ParsedPacket) error {
 	mutex.Lock()
 	defer mutex.Unlock()
-
-	db.AutoMigrate(&PacketDetail{})
 
 	return db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Create(convertParsedPacket(packets)).Error; err != nil {
