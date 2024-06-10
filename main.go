@@ -50,11 +50,18 @@ func main() {
 
 	defer handle.Close()
 
-	db, err := gorm.Open(sqlite.Open("flows.db"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open("flows.db"), &gorm.Config{
+		SkipDefaultTransaction: true,
+		PrepareStmt:            true,
+	})
 
 	if err != nil {
 		log.Fatal("Failed to connect to database", err)
 	}
+
+	// Optimizing the database
+	db.Exec("PRAGMA journal_mode = MEMORY;")
+	db.Exec("PRAGMA synchronous = OFF;")
 
 	db.AutoMigrate(&sql.PacketDetail{})
 
