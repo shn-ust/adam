@@ -41,8 +41,10 @@ func InsertPacketsInBatch(db *gorm.DB, mutex *sync.Mutex, packets []*parse.Parse
 	mutex.Lock()
 	defer mutex.Unlock()
 
+	const batchSize = 256
+
 	return db.Transaction(func(tx *gorm.DB) error {
-		if err := tx.Create(convertParsedPacket(packets)).Error; err != nil {
+		if err := tx.CreateInBatches(convertParsedPacket(packets), batchSize).Error; err != nil {
 			return err
 		}
 

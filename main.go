@@ -52,7 +52,6 @@ func main() {
 
 	db, err := gorm.Open(sqlite.Open("flows.db"), &gorm.Config{
 		SkipDefaultTransaction: true,
-		PrepareStmt:            true,
 	})
 
 	if err != nil {
